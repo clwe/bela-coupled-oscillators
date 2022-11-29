@@ -15,7 +15,7 @@ void render(BelaContext *context, void *userData)
 		float in = audioRead(context, n, 1);
 		int inputNode = 0;
 		int outputNode = 0;
-		float out = co.verlet_step(in, inputNode, outputNode);
+		float out = co.verletStep(in, inputNode, outputNode);
 		audioWrite(context, n, 0, out);
 		audioWrite(context, n, 1, out);
 	}

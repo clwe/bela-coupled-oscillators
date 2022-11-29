@@ -72,7 +72,7 @@ float CoupledOscillators::step(float in, int inputNode) {
 		return _x_pos[(int)(N_MASSES/2)];
 }
 
-float CoupledOscillators::verlet_step(float in, int input_node, int output_node) {
+float CoupledOscillators::verletStep(float in, int input_node, int output_node) {
 	
 	float input_velocity = calculateInputVelocity(in);
 	
@@ -88,7 +88,8 @@ float CoupledOscillators::verlet_step(float in, int input_node, int output_node)
    	}
    	
    	float a_new[N_MASSES];
-   	_stiffM.mat_multiply(_x, a_new);
+   	//_stiffM.mat_multiply(_x, a_new);
+   	getStringAcceleration(_x, a_new);
    	//a_new[0] = -_stiffness*_x[0];
    	for (int i=0; i<N_MASSES; i++) {
    		float dv = 0.5 * (_a[i] + a_new[i]);
@@ -105,4 +106,17 @@ float CoupledOscillators::verlet_step(float in, int input_node, int output_node)
    	//*s->v_data() += - 2 * (*co.get_damping_matrix().data() * *s->v_data());
    
    	return _x[output_node];
+}
+
+void CoupledOscillators::getStringAcceleration(float x[N_MASSES], float (&a)[N_MASSES]) {
+	float stiffness = 0.05;
+	if(N_MASSES==1) {
+		a[0] = -stiffness * x[0];
+		return;
+	}
+	a[0] = -stiffness * (x[0]-x[1]);
+	for (int i=1; i<N_MASSES-1; i++){
+		a[i] = -stiffness * (-x[i-1]+2*x[i]-x[i+1]);
+	}
+	a[N_MASSES-1] = -stiffness * (x[N_MASSES-1]-x[N_MASSES-2]);
 }

@@ -19,8 +19,11 @@ public:
 	float getAccel(float stiffness, float x_new);
 	
 	float step(float in, int inputNode);
-	float verlet_step(float in, int input_node, int output_node);
+	float verletStep(float in, int input_node, int output_node);
+
 private:
+	void getStringAcceleration(float x[N_MASSES], float (&a)[N_MASSES]);
+	
 	StiffnessMatrix _stiffM;
 	float _x_pos[N_MASSES];
 	float _x_pos_old[N_MASSES];
@@ -34,4 +37,5 @@ private:
 	float _x[N_MASSES];
 	float _a[N_MASSES];
 	float _v[N_MASSES];
+	
 };
