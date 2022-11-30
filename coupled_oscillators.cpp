@@ -1,27 +1,31 @@
 #include "coupled_oscillators.hpp"
 #include "stiffness_matrix.hpp"
-#include "defines.hpp"
 using namespace std;
 
 
-CoupledOscillators::CoupledOscillators(Type t, float stiffness, int x, int y):_type(t),_stiffM(stiffness) {
-
-	for (int i=0; i<N_MASSES; i++){
-		_x[i]=0;
-		_v[i]=0;
-		_a[i]=0;
-	}
-	_friction  = 0.0001;
+CoupledOscillators::CoupledOscillators(COConfig conf):_conf(conf) {
 	
-	switch (_type) {
+	
+	switch (_conf.type) {
 		case PLATE:
-			_stiffM.buildUpPlate(x,y, stiffness);
+			_n_masses = _conf.x*_conf.y;
+			_stiff_M.setSize(_n_masses);
+			_stiff_M.buildUpPlate(_conf.x,_conf.y, _conf.stiffness);
 			break;
 		case STRING:
-			_stiffM.buildUpString(x, stiffness);
-			_string_len = x;
+			_n_masses = _conf.len;
+			_stiff_M.setSize(_n_masses);
+			_stiff_M.buildUpString(_conf.stiffness);
 			break;
 	}
+	
+	for (int i=0; i<_n_masses; i++){
+		_x.push_back(0);
+		_v.push_back(0);
+		_a.push_back(0);
+		_a_new.push_back(0);
+	}
+
 };
 
 float CoupledOscillators::simpleHighPass(float in) {
@@ -42,7 +46,7 @@ float CoupledOscillators::verletStep(float in, int input_node, int output_node) 
    	//	*s->a_data() = _aNew;
    	//	*s->v_data() += - 2 * (*co.get_damping_matrix().data() * *s->v_data());
    	
-   	for (int i=0; i<N_MASSES; i++) {
+   	for (int i=0; i<_n_masses; i++) {
    		float dx = _v[i] + 0.5 * _a[i];
    		_x[i] += dx;
    		if(i==input_node) {
@@ -50,35 +54,32 @@ float CoupledOscillators::verletStep(float in, int input_node, int output_node) 
    		}
    	}
    	
-   	float a_new[N_MASSES];
-   	
-   	//_stiffM.mat_multiply(_x, a_new);
-   	if(_type == STRING) {
-   		getStringAcceleration(_x, a_new, _stiffM.getStiffnessVal());
+   	if(_conf.type == STRING) {
+   		getStringAcceleration(_x, _a_new);
    	}
    	else {
-   		_stiffM.mat_multiply(_x, a_new);
+   		_stiff_M.matMultiply(_x, _a_new);
    	}
    	
-   	for (int i=0; i<N_MASSES; i++) {
-   		float dv = 0.5 * (_a[i] + a_new[i]);
+   	for (int i=0; i<_n_masses; i++) {
+   		float dv = 0.5 * (_a[i] + _a_new[i]);
    		_v[i] += dv;
-   		_a[i] = a_new[i];
-   		_v[i] += -2*(_friction * _v[i]);
+   		_a[i] = _a_new[i];
+   		_v[i] += -2*(_conf.damping * _v[i]);
    	}
    
    	return _x[output_node];
 }
 
-void CoupledOscillators::getStringAcceleration(float x[N_MASSES], float (&a)[N_MASSES], float stiffness) {
-	if(_string_len==1) {
-		a[0] = -stiffness * x[0];
+void CoupledOscillators::getStringAcceleration(vector<float> x, vector<float> &a) {
+	if(_n_masses==1) {
+		a[0] = -_conf.stiffness * x[0];
 		return;
 	}
-	a[0] = -stiffness * (x[0]-x[1]);
+	a[0] = -_conf.stiffness * (x[0]-x[1]);
 	
-	for (int i=1; i<_string_len-1; i++){
-		a[i] = -stiffness * (-x[i-1]+2*x[i]-x[i+1]);
+	for (int i=1; i<_n_masses-1; i++){
+		a[i] = -_conf.stiffness * (-x[i-1]+2*x[i]-x[i+1]);
 	}
-	a[_string_len-1] = -stiffness * (x[_string_len-1]-x[_string_len-2]);
+	a[_n_masses-1] = -_conf.stiffness * (x[_n_masses-1]-x[_n_masses-2]);
 }

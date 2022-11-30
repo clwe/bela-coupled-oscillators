@@ -1,9 +1,12 @@
 #include <Bela.h>
 #include "coupled_oscillators.hpp"
-float stiffn_str = 0.01;
-float stiffn_plt = 0.005;
-CoupledOscillators string = CoupledOscillators(CoupledOscillators::STRING, stiffn_str, 16);
-CoupledOscillators plate = CoupledOscillators(CoupledOscillators::PLATE, stiffn_plt, 4,4);
+
+COConfig plate_conf = {.type=PLATE, .x=4, .y=4, .stiffness=0.005, .damping=0.0001};
+COConfig string_conf = {.type=STRING, .len=16, .stiffness=0.01, .damping=0.001};
+
+
+CoupledOscillators string = CoupledOscillators(string_conf);
+CoupledOscillators plate = CoupledOscillators(plate_conf);
 
 bool setup(BelaContext *context, void *userData)
 {

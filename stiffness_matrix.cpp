@@ -10,16 +10,20 @@
 #include <iostream>
 
 
-StiffnessMatrix::StiffnessMatrix(float stiffness):
-_n_masses(N_MASSES),_stiffnessVal(stiffness)
-{
-    clear();
+StiffnessMatrix::StiffnessMatrix(){};
+
+void StiffnessMatrix::setSize(int n_masses) {
+	_n_masses = n_masses;
+	init();
+}
+void StiffnessMatrix::init() {
+	_stiffness.resize(_n_masses, std::vector<float>(_n_masses, 0));
 };
 
 void StiffnessMatrix::clear() {
-	for(int i=0; i<_n_masses; i++) {
-		for(int j=0;j<_n_masses;j++) {
-    		_stiffness[i][j] = 0;
+	for (int i=0; i<_n_masses; i++) {
+		for (int j=0; j<_n_masses; j++) {
+			_stiffness[i][j]=0;
 		}
 	}
 };
@@ -31,7 +35,7 @@ void StiffnessMatrix::addSpring(int i, int j, float stiffness) {
 	_stiffness[j][i] -= stiffness;
 }
 
-void StiffnessMatrix::mat_multiply(float x[N_MASSES], float (&a)[N_MASSES]) {
+void StiffnessMatrix::matMultiply(vector<float> x, vector<float> &a) {
 
 	for (int i=0; i<_n_masses; i++) {
 		a[i] = 0;
@@ -41,17 +45,13 @@ void StiffnessMatrix::mat_multiply(float x[N_MASSES], float (&a)[N_MASSES]) {
 	}
 }
 
-void StiffnessMatrix::buildUpString(int length, float stiffness) {
-	if (length>_n_masses) {
-		std::cout << "Not enough masses reserved for this length of string!" << std::endl;
-		return;
-	}
+void StiffnessMatrix::buildUpString(float stiffness) {
 	clear();
 	if (1==_n_masses) {
         _stiffness[0][0]=-stiffness;
     }
     else {
-        for (int i=0; i<length-1; ++i) {
+        for (int i=0; i<_n_masses-1; ++i) {
         	addSpring(i, i+1, stiffness);
         }
     }

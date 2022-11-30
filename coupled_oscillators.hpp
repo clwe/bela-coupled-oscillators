@@ -2,38 +2,39 @@
 #pragma once
 
 #include "stiffness_matrix.hpp"
-#include "defines.hpp"
+#include <vector>
 using namespace std;
+
+enum Type {
+		PLATE,
+    	STRING
+	};
+
+typedef struct {
+	Type type;
+	int x;
+	int y;
+	int len;
+	float stiffness;
+	float damping;
+} COConfig;
 
 
 class CoupledOscillators
 {
 public:
-	enum Type {
-		PLATE,
-    	STRING
-	};
-	
-	CoupledOscillators(Type t, float stiffness, int x, int y=0);
+	CoupledOscillators(COConfig conf);
 	float verletStep(float in, int input_node, int output_node);
-	
-	void setType(Type t) {
-      _type = t;
-	}
-
-	Type getType() const {
-		return _type;
-	}
 
 private:
-	Type _type;
-	void getStringAcceleration(float x[N_MASSES], float (&a)[N_MASSES], float stiffness);
+	COConfig _conf;
+	void getStringAcceleration(vector<float> x, vector<float> &a);
 	float simpleHighPass(float in);
-	StiffnessMatrix _stiffM;
-	float _friction;
-	float _x[N_MASSES];
-	float _a[N_MASSES];
-	float _v[N_MASSES];
+	StiffnessMatrix _stiff_M;
+	vector<float> _x;
+	vector<float> _a;
+	vector<float> _v;
+	vector<float> _a_new;
 	float _in_old;
-	unsigned int _string_len;
+	unsigned int _n_masses;
 };
