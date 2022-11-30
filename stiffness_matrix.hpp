@@ -9,23 +9,30 @@
 #pragma once
 #include "defines.hpp"
 #include <vector>
-//#include "adjacency_matrix.hpp"
 
 class StiffnessMatrix {
 public:
-    StiffnessMatrix(unsigned int n_modes);
+	
+	
+    StiffnessMatrix(float stiffness);
     
-    inline const unsigned int get_n_modes() const
-    { return _n_modes; }
+    inline const unsigned int getNMasses() const
+    { return _n_masses; }
     
-    void mat_multiply(float vec[N_MASSES], float (&res)[N_MASSES]);
+    void mat_multiply(float x_vec[N_MASSES], float (&a_res)[N_MASSES]);
     
-    void buildUpString(void);
-  
+    void addSpring(int i, int j, float stiffness);
+    
+    void buildUpString(int length, float stiffness);
+    void buildUpPlate(int x, int y, float stiffness);
+    inline float getStiffnessVal() {
+    	return _stiffnessVal;
+    }
    
 private:
     void clear();
-    unsigned int _n_modes;
+    unsigned int _n_masses;
     float _stiffness[N_MASSES][N_MASSES];
-
+    float _stiffnessVal;
+    
 };

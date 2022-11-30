@@ -1,3 +1,3 @@
 #pragma once
 
-#define N_MASSES 64
+#define N_MASSES 25

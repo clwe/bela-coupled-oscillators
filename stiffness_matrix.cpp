@@ -7,63 +7,77 @@
 //
 
 #include "stiffness_matrix.hpp"
+#include <iostream>
 
-StiffnessMatrix::StiffnessMatrix(unsigned int n_modes):
-_n_modes(n_modes)
+
+StiffnessMatrix::StiffnessMatrix(float stiffness):
+_n_masses(N_MASSES),_stiffnessVal(stiffness)
 {
     clear();
-    buildUpString();
 };
 
 void StiffnessMatrix::clear() {
-	for(int i=0; i<_n_modes; i++) {
-		for(int j=0;j<_n_modes;j++) {
-    	_stiffness[i][j] = 0;
+	for(int i=0; i<_n_masses; i++) {
+		for(int j=0;j<_n_masses;j++) {
+    		_stiffness[i][j] = 0;
 		}
 	}
 };
 
-void StiffnessMatrix::mat_multiply(float x[N_MASSES], float (&a)[N_MASSES]) {
-	float stiffness = 0.05;
-	a[0] = -stiffness * (x[0]-x[1]);
-	/*a[1] = -0.01 * (x[1]-x[0]+x[1]-x[2]);
-	a[2] = -0.01 * (x[2]-x[1]+x[2]-x[3]);
-	a[3] = -0.01 * (x[3]-x[2]+x[3]-x[4]);*/
-	
-	for (int i=1; i<_n_modes-1; i++){
-		a[i] = -stiffness * (-x[i-1]+2*x[i]-x[i+1]);
-	}
-	a[_n_modes-1] = -stiffness * (x[_n_modes-1]-x[_n_modes-2]);
-	//-stiffness*(x2-x1);
-	/*for(int i=0; i<_n_modes; i++) {
-		res[i]=0;
-		for(int j=0;j<_n_modes;j++) {
-    		res[i] += _stiffness[i][j] * vec[j];
-		}
-	}*/
+void StiffnessMatrix::addSpring(int i, int j, float stiffness) {
+	_stiffness[i][i] += stiffness;
+	_stiffness[j][j] += stiffness;
+	_stiffness[i][j] -= stiffness;
+	_stiffness[j][i] -= stiffness;
 }
 
+void StiffnessMatrix::mat_multiply(float x[N_MASSES], float (&a)[N_MASSES]) {
 
+	for (int i=0; i<_n_masses; i++) {
+		a[i] = 0;
+		for (int j=0; j<_n_masses; j++) {
+			a[i] += -_stiffness[i][j] * x[j];
+		}
+	}
+}
 
-void StiffnessMatrix::buildUpString(){
-	if (1==_n_modes) {
-        _stiffness[0][0]=-0.01;
+void StiffnessMatrix::buildUpString(int length, float stiffness) {
+	if (length>_n_masses) {
+		std::cout << "Not enough masses reserved for this length of string!" << std::endl;
+		return;
+	}
+	clear();
+	if (1==_n_masses) {
+        _stiffness[0][0]=-stiffness;
     }
     else {
-        for (int i=0; i<_n_modes; ++i){
-            for (int j=0; j<_n_modes; ++j){
-                if (i==j){
-                     _stiffness[i][j]=0.02;
-                }
-                if (i==j-1){
-                    _stiffness[i][j]=-0.01;
-                }
-                if (i==j+1){
-                    _stiffness[i][j]=-0.01;
-                }
-            }
+        for (int i=0; i<length-1; ++i) {
+        	addSpring(i, i+1, stiffness);
         }
     }
-    _stiffness[0][0]=0.01;
-    _stiffness[_n_modes-1][_n_modes-1]=0.01;
+};
+
+void StiffnessMatrix::buildUpPlate(int x, int y, float stiffness){
+	if (x*y>_n_masses) {
+		std::cout << "Not enough masses reserved for this size of a plate!" << std::endl;
+		return;
+	}
+	clear();
+	if (1==_n_masses) {
+        _stiffness[0][0]=-stiffness;
+    }
+    else {
+		for (int i=0; i<y-1; ++i) {
+			for (int j=0; j<x-1; ++j) {
+				// horizontal connections
+				addSpring(j+i*y, j+1+i*y, stiffness);
+			}
+		}
+		for (int i=0; i<y-1; ++i) {
+			for (int j=0; j<x-1; ++j) {
+				// vertical connections
+				addSpring(j+i*x, j+(i+1)*x, stiffness);
+			}
+		}
+    }
 };
