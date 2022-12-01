@@ -2,7 +2,6 @@
 #include <cmath>
 #include <libraries/Trill/Trill.h>
 #include <libraries/OnePole/OnePole.h>
-#include <libraries/Oscillator/Oscillator.h>
 #include "coupled_oscillators.hpp"
 
 COConfig plate_conf = {.type=PLATE, .x=3, .y=4, .stiffness=0.0005, .damping=0.0001};
@@ -29,8 +28,6 @@ unsigned int gTaskSleepTime = 12000; // microseconds
 OnePole freqFilt[NUM_TOUCH], ampFilt[NUM_TOUCH];
 // Frequency of one pole filters
 float gCutOffFreq = 5, gCutOffAmp = 15;
-// Oscillators objects declaration
-Oscillator osc[NUM_TOUCH];
 // Range for oscillator frequency mapping
 float gFreqRange[2] = { -0.5, 0.5 };
 // Range for oscillator amplitude mapping
@@ -75,8 +72,6 @@ bool setup(BelaContext *context, void *userData)
 
 	// For each possible touch...
 	for(unsigned int i = 0; i < NUM_TOUCH; i++) {
-		// Setup corresponding oscillator
-		osc[i].setup(context->audioSampleRate, Oscillator::sine);
 		// Setup low pass filters for smoothing frequency and amplitude
 		freqFilt[i].setup(gCutOffFreq, context->audioSampleRate);
 		ampFilt[i].setup(gCutOffAmp, context->audioSampleRate);
