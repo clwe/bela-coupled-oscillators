@@ -15,6 +15,7 @@ CoupledOscillators::CoupledOscillators(COConfig conf):_conf(conf) {
 		case STRING:
 			_n_masses = _conf.len;
 			_stiff_M.setSize(_n_masses);
+			_mod_stiffness = _conf.stiffness;
 			_stiff_M.buildUpString(_conf.stiffness);
 			break;
 	}
@@ -28,13 +29,18 @@ CoupledOscillators::CoupledOscillators(COConfig conf):_conf(conf) {
 
 };
 
+void CoupledOscillators::modulateGlobalStiffness(float modulation) {
+	_stiff_M.modulateGlobalStiffness(modulation);
+	_mod_stiffness = _conf.stiffness*(1+modulation);
+}
+
 float CoupledOscillators::simpleHighPass(float in) {
 	float hp = in-_in_old;
 	_in_old = in;
 	return hp;
 }
 
-float CoupledOscillators::verletStep(float in, int input_node, int output_node) {
+float CoupledOscillators::step(float in, int input_node, int output_node) {
 	
 	//  dx = v_old * dt + 0.5 * a_old * dt^2;% - damping * a_old * dt^2;
     //  x_new = x_old + dx;
@@ -73,13 +79,13 @@ float CoupledOscillators::verletStep(float in, int input_node, int output_node) 
 
 void CoupledOscillators::getStringAcceleration(vector<float> x, vector<float> &a) {
 	if(_n_masses==1) {
-		a[0] = -_conf.stiffness * x[0];
+		a[0] = -_mod_stiffness * x[0];
 		return;
 	}
-	a[0] = -_conf.stiffness * (x[0]-x[1]);
+	a[0] = -_mod_stiffness * (x[0]-x[1]);
 	
 	for (int i=1; i<_n_masses-1; i++){
-		a[i] = -_conf.stiffness * (-x[i-1]+2*x[i]-x[i+1]);
+		a[i] = -_mod_stiffness * (-x[i-1]+2*x[i]-x[i+1]);
 	}
-	a[_n_masses-1] = -_conf.stiffness * (x[_n_masses-1]-x[_n_masses-2]);
+	a[_n_masses-1] = -_mod_stiffness * (x[_n_masses-1]-x[_n_masses-2]);
 }

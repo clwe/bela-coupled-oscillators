@@ -20,11 +20,13 @@ public:
     
     void buildUpString(float stiffness);
     void buildUpPlate(int x, int y, float stiffness);
-   
+    void modulateGlobalStiffness(float modulation);
+
 private:
     
     void init();
     void clear();
     int _n_masses;
-    vector<vector<float>>  _stiffness;
+    vector<vector<float>> _stiffness;
+    vector<vector<float>> _stiffness_mod;
 };

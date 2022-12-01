@@ -18,15 +18,25 @@ void StiffnessMatrix::setSize(int n_masses) {
 }
 void StiffnessMatrix::init() {
 	_stiffness.resize(_n_masses, std::vector<float>(_n_masses, 0));
-};
+	_stiffness_mod = _stiffness;
+}
+
+void StiffnessMatrix::modulateGlobalStiffness(float modulation) {
+	for (int i=0; i<_n_masses; i++) {
+		for (int j=0; j<_n_masses; j++) {
+			_stiffness_mod[i][j]=_stiffness[i][j]*(1+modulation);
+		}
+	}
+}
 
 void StiffnessMatrix::clear() {
 	for (int i=0; i<_n_masses; i++) {
 		for (int j=0; j<_n_masses; j++) {
 			_stiffness[i][j]=0;
+			//_stiffness_mod[i][j]=0;
 		}
 	}
-};
+}
 
 void StiffnessMatrix::addSpring(int i, int j, float stiffness) {
 	_stiffness[i][i] += stiffness;
@@ -40,7 +50,7 @@ void StiffnessMatrix::matMultiply(vector<float> x, vector<float> &a) {
 	for (int i=0; i<_n_masses; i++) {
 		a[i] = 0;
 		for (int j=0; j<_n_masses; j++) {
-			a[i] += -_stiffness[i][j] * x[j];
+			a[i] += -_stiffness_mod[i][j] * x[j];
 		}
 	}
 }
