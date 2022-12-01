@@ -8,6 +8,7 @@
 
 #include "stiffness_matrix.hpp"
 #include <iostream>
+using namespace std;
 
 
 StiffnessMatrix::StiffnessMatrix(){};
@@ -45,7 +46,7 @@ void StiffnessMatrix::addSpring(int i, int j, float stiffness) {
 	_stiffness[j][i] -= stiffness;
 }
 
-void StiffnessMatrix::matMultiply(vector<float> x, vector<float> &a) {
+void StiffnessMatrix::matMultiply(const vector<float> &x, vector<float> &a) {
 
 	for (int i=0; i<_n_masses; i++) {
 		a[i] = 0;

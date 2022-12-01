@@ -8,14 +8,13 @@
 
 #pragma once
 #include <vector>
-using namespace std;
 
 class StiffnessMatrix {
 public:
     StiffnessMatrix();
     
     void setSize(int n_masses);
-    void matMultiply(vector<float> x_vec, vector<float> &a_res );
+    void matMultiply(const std::vector<float>& x_vec, std::vector<float> &a_res );
     void addSpring(int i, int j, float stiffness);
     
     void buildUpString(float stiffness);
@@ -27,6 +26,6 @@ private:
     void init();
     void clear();
     int _n_masses;
-    vector<vector<float>> _stiffness;
-    vector<vector<float>> _stiffness_mod;
+    std::vector<std::vector<float>> _stiffness;
+    std::vector<std::vector<float>> _stiffness_mod;
 };

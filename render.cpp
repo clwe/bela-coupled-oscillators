@@ -2,7 +2,7 @@
 #include "coupled_oscillators.hpp"
 #include <cmath>
 
-COConfig plate_conf = {.type=PLATE, .x=4, .y=4, .stiffness=0.005, .damping=0.0001};
+COConfig plate_conf = {.type=PLATE, .x=4, .y=4, .stiffness=0.0005, .damping=0.0001};
 COConfig string_conf = {.type=STRING, .len=32, .stiffness=0.01, .damping=0.0001};
 
 
