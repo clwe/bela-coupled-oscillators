@@ -4,8 +4,8 @@
 #include <libraries/OnePole/OnePole.h>
 #include "coupled_oscillators.hpp"
 
-COConfig plate_conf = {.type=PLATE, .x=3, .y=4, .stiffness=0.0005, .damping=0.0001};
-COConfig string_conf = {.type=STRING, .len=32, .stiffness=0.01, .damping=0.0001};
+COConfig plate_conf = {.type=PLATE, .x=5, .y=5, .stiffness=0.0005, .damping=0.0001};
+COConfig string_conf = {.type=STRING, .size=32, .stiffness=0.01, .damping=0.0001};
 CoupledOscillators string = CoupledOscillators(string_conf);
 CoupledOscillators plate = CoupledOscillators(plate_conf);
 
@@ -85,12 +85,10 @@ void render(BelaContext *context, void *userData)
 	for(unsigned int n = 0; n < context->audioFrames; n++) {
 		/* For each touch:
 		*
-		* 	- Map touch location to frequency of the oscillator
+		* 	- Map touch location to sitffness of the resonator
 		* 	and smooth value changes using a single pole LP filter
-		* 	- Map touch size toa amplitude of the oscillator and
+		* 	- Map touch size toa amplitude of the resonator and
 		* 	smooth value changes using a single pole LP filter
-		* 	- Compute oscillator value and add to output.
-		* 	- The overall output will be scaled by the number of touches.
 		*/
 
 		float frq_string, amp_string;

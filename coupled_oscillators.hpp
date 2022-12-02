@@ -1,19 +1,22 @@
 
 #pragma once
 
-#include "stiffness_matrix.hpp"
+#include "mass_interaction.hpp"
+
 #include <vector>
+#include <iostream>
 
 enum Type {
 		PLATE,
-    	STRING
+    	STRING,
+    	EMPTY
 	};
 
 typedef struct {
 	Type type;
 	int x;
 	int y;
-	int len;
+	int size;
 	float stiffness;
 	float damping;
 } COConfig;
@@ -23,9 +26,20 @@ class CoupledOscillators
 {
 public:
 	CoupledOscillators(COConfig conf);
+	
+	void addSpring(int i, int j, float stiffness);
+    void addWall(int i, float stiffness);
+    
 	void modulateGlobalStiffness(float modulation);
 	
 	float step(float in, int input_node, int output_node) {
+		if(input_node>_n_masses-1) {
+			std::cout << "error: input node out of range" << std::endl;
+			return 0;
+		}if(output_node>_n_masses-1) {
+			std::cout << "error: output node out of range" << std::endl;
+			return 0;
+		}
 	   	for (int i=0; i<_n_masses; i++) {
 	   		float dx = _v[i] + 0.5 * _a[i];
 	   		_x[i] += dx;
@@ -37,11 +51,17 @@ public:
 	   	if(_conf.type == STRING) {
 	   		getStringAcceleration(_x, _a_new);
 	   	}
-	   	else {
-	   		_stiff_M.matMultiply(_x, _a_new);
+	   	else if(_conf.type == PLATE || EMPTY) {
+	   		_mi.getAcceleration(_x, _a_new);
 	   	}
 	   	
 	   	for (int i=0; i<_n_masses; i++) {
+	   		if(_conf.type==STRING){
+	   			// do nothing
+	   		}
+	   		else { // modulate acceleration individually 
+	   			_a_new[i]*=_mod_stiffness_fac;
+	   		}
 	   		float dv = 0.5 * (_a[i] + _a_new[i]);
 	   		_v[i] += dv;
 	   		_a[i] = _a_new[i];
@@ -55,8 +75,9 @@ public:
 private:
 	COConfig _conf;
 	float _mod_stiffness;
+	float _mod_stiffness_fac;
 	float simpleHighPass(float in);
-	StiffnessMatrix _stiff_M;
+	MassInteraction _mi;
 	std::vector<float> _x;
 	std::vector<float> _a;
 	std::vector<float> _v;
@@ -76,4 +97,5 @@ private:
 		}
 		a[_n_masses-1] = -_mod_stiffness * (x[_n_masses-1]-x[_n_masses-2]);
 	}
+	
 };
