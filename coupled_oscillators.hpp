@@ -49,6 +49,9 @@ public:
 	   	}
 	   	return _x[output_node];
 	}
+	float getOscillator(int num) {
+		return _x[num];
+	}
 
 
 
